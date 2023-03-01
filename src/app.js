@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const validator = require('validator');
 mongoose.set('strictQuery', false);
 mongoose
   .connect(
@@ -20,8 +20,39 @@ const dataSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    unique: true, // not a validator
+    // validation
+    lowercase: true,
+    trim: true,
+    minlength: [2, 'minimum 2 letters'],
+    maxlength: 30,
+    // enum: ['taddy', 'maddy', 'waddy'],
   },
-  age: Number,
+  age: {
+    type: Number,
+    validate(value) {
+      if (value < 0) {
+        throw new Error('age count should not be begative');
+      }
+    },
+
+    // validate: {
+    //   validator: function (value) {
+    //     return value.length < 0;
+    //   },
+    //   message: 'age count should not be begative',
+    // },
+  },
+  email: {
+    type: String,
+    require: true,
+    unique: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error('Email is invalid');
+      }
+    },
+  },
   active: Boolean,
   date: { type: Date, default: Date.now },
 });
@@ -47,25 +78,28 @@ const createDocument = async () => {
     // // docData.save();
     // const result = await docData.save();
 
-    const mocData = new Pdata({
-      name: 'waddy',
-      age: 22,
-      active: true,
-    });
+    // /////////////////////////////
+    // const mocData = new Pdata({
+    //   name: 'waddy',
+    //   age: 22,
+    //   active: true,
+    // });
 
-    const rocData = new Pdata({
-      name: 'raddy',
-      age: 22,
-      active: true,
-    });
+    // const rocData = new Pdata({
+    //   name: 'raddy',
+    //   age: 22,
+    //   active: true,
+    // });
 
     const nocData = new Pdata({
-      name: 'naddy',
+      name: 'raddy',
       age: 22,
+      email: 'asdf@gmail.com',
       active: true,
     });
 
-    const result = await Pdata.insertMany([mocData, rocData, nocData]);
+    // const result = await Pdata.insertMany([mocData, rocData, nocData]);
+    const result = await Pdata.insertMany([nocData]);
 
     console.log(result);
   } catch (err) {
@@ -73,7 +107,7 @@ const createDocument = async () => {
   }
 };
 
-// createDocument();
+createDocument();
 
 const getDocument = async () => {
   try {
